@@ -3,6 +3,7 @@ package org.example.util;
 import org.example.config.AppProperties;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,6 +13,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class SnowflakeIdGeneratorTest {
 
@@ -75,5 +77,43 @@ class SnowflakeIdGeneratorTest {
         for (int i = 0; i < 100; i++) {
             assertThat(generator.nextId()).isPositive();
         }
+    }
+
+    @Test
+    void testConstructor_negativeWorkerId_throwsIllegalArgumentException() {
+        AppProperties props = new AppProperties();
+        props.getSnowflake().setWorkerId(-1);
+        assertThatThrownBy(() -> new SnowflakeIdGenerator(props))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("workerId");
+    }
+
+    @Test
+    void testConstructor_workerIdTooLarge_throwsIllegalArgumentException() {
+        AppProperties props = new AppProperties();
+        props.getSnowflake().setWorkerId(1024);
+        assertThatThrownBy(() -> new SnowflakeIdGenerator(props))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("workerId");
+    }
+
+    @Test
+    void testConstructor_boundaryWorkerIds_valid() {
+        AppProperties min = new AppProperties();
+        min.getSnowflake().setWorkerId(0);
+        assertThat(new SnowflakeIdGenerator(min).nextId()).isPositive();
+
+        AppProperties max = new AppProperties();
+        max.getSnowflake().setWorkerId(1023);
+        assertThat(new SnowflakeIdGenerator(max).nextId()).isPositive();
+    }
+
+    @Test
+    void testClockBackwards_throwsIllegalStateException() {
+        // Force lastTimestamp to a value far in the future so currentTimeMillis() < lastTimestamp
+        ReflectionTestUtils.setField(generator, "lastTimestamp", Long.MAX_VALUE);
+        assertThatThrownBy(() -> generator.nextId())
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("backwards");
     }
 }
