@@ -11,6 +11,9 @@ on:
     # this is the closest fixed-date approximation.
     - cron: '0 0 1,21 * *'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ── Job 1: Fast compile gate ─────────────────────────────────────────────────
   build:
@@ -28,7 +31,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle (with cache)
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           # Only write the cache on main; PR/schedule builds read it.
           cache-read-only: ${{ github.ref != 'refs/heads/main' }}
@@ -53,7 +56,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle (with cache)
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: true
 
@@ -90,7 +93,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Setup Gradle (with cache)
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
         with:
           cache-read-only: true
 
