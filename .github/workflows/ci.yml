@@ -111,7 +111,7 @@ jobs:
             --no-daemon
 
       - name: Generate JaCoCo coverage report
-        run: ./gradlew jacocoTestReport --no-daemon
+        run: ./gradlew jacocoTestReport -x test --no-daemon
 
       - name: Run SonarCloud analysis
         env:
