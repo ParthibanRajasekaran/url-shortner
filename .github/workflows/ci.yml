@@ -99,15 +99,18 @@ jobs:
         with:
           cache-read-only: true
 
-      - name: Run tests with coverage and analyse
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Run tests with coverage
         run: |
-          ./gradlew test jacocoTestReport sonar \
+          ./gradlew test jacocoTestReport \
             --tests "org.example.util.*" \
             --tests "org.example.service.*" \
             --tests "org.example.controller.*" \
             --no-daemon
+
+      - name: Run SonarCloud analysis
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: ./gradlew sonar --no-daemon
 
   # ── Job 4: Integration tests (Testcontainers manages PostgreSQL + Redis) ──────
   integration-tests:
