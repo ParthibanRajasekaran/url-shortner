@@ -23,6 +23,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
 
+    // Prometheus metrics export
+    runtimeOnly("io.micrometer:micrometer-registry-prometheus")
+
     // PostgreSQL
     runtimeOnly("org.postgresql:postgresql")
 
