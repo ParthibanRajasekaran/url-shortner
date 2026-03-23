@@ -2,9 +2,9 @@ name: SwiftLink CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, develop ]
   schedule:
     # Runs on the 1st and 21st of every month at midnight UTC (~every 20 days).
     # Standard cron does not support true rolling 20-day intervals;
