@@ -103,9 +103,9 @@ class UrlShortenerIntegrationTest {
                 .build();
         repository.save(existing);
 
-        // Try to save another record with the same id — simulates Snowflake producing same ID
+        // Try to save another record with a different id but same shortCode — triggers UNIQUE constraint
         UrlMapping duplicate = UrlMapping.builder()
-                .id(9999L)
+                .id(9998L)
                 .shortCode("collis1")
                 .longUrl("https://duplicate.com")
                 .createdAt(Instant.now())
