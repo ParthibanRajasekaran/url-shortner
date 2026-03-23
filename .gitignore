@@ -41,3 +41,6 @@ bin/
 
 ### Mac OS ###
 .DS_Store
+
+### Claude Code (local-only settings) ###
+.claude/settings.local.json
