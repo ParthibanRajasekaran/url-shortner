@@ -155,7 +155,6 @@ class UrlServiceTest {
     }
 
     @Test
-    @SuppressWarnings({"unchecked", "rawtypes"})
     void testShortenUrl_redisWriteFailure_stillReturnsResponse() {
         when(snowflakeIdGenerator.nextId()).thenReturn(123456789012345L);
         RBucket rBucket = mock(RBucket.class);

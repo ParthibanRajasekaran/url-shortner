@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BeanPropertyBindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -69,6 +72,22 @@ class GlobalExceptionHandlerTest {
         assertThat(response.getBody()).isNotNull();
         assertThat(response.getBody().status()).isEqualTo(500);
         assertThat(response.getBody().message()).isEqualTo("An unexpected error occurred");
+    }
+
+    @Test
+    void handleValidation_returns422WithJoinedFieldErrors() {
+        BeanPropertyBindingResult bindingResult = new BeanPropertyBindingResult(new Object(), "shortenRequest");
+        bindingResult.addError(new FieldError("shortenRequest", "longUrl", "must not be blank"));
+        bindingResult.addError(new FieldError("shortenRequest", "longUrl", "must be a valid URL"));
+        MethodArgumentNotValidException ex = new MethodArgumentNotValidException(null, bindingResult);
+
+        ResponseEntity<GlobalExceptionHandler.ErrorResponse> response = handler.handleValidation(ex);
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNPROCESSABLE_ENTITY);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody().status()).isEqualTo(422);
+        assertThat(response.getBody().message()).contains("must not be blank");
+        assertThat(response.getBody().message()).contains("must be a valid URL");
     }
 
     @Test
