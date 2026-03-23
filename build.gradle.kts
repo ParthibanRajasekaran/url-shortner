@@ -2,6 +2,8 @@ plugins {
     id("org.springframework.boot") version "3.3.4"
     id("io.spring.dependency-management") version "1.1.6"
     id("java")
+    id("jacoco")
+    id("org.sonarqube") version "5.1.0.4882"
 }
 
 group = "org.example"
@@ -55,4 +57,23 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports {
+        xml.required = true
+    }
+}
+
+sonar {
+    properties {
+        property("sonar.projectKey", "ParthibanRajasekaran_url-shortner")
+        property("sonar.organization", "parthibanrajasekaran")
+        property("sonar.host.url", "https://sonarcloud.io")
+        property("sonar.coverage.jacoco.xmlReportPaths", "build/reports/jacoco/test/jacocoTestReport.xml")
+        property("sonar.java.source", "21")
+        property("sonar.exclusions", "**/dto/**,**/entity/**,**/exception/**,**/*Application.java")
+    }
 }
