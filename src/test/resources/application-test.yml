@@ -1,0 +1,15 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+
+app:
+  own-host: localhost
+  base-url: http://localhost
+
+logging:
+  level:
+    org.example: DEBUG
+    liquibase: WARN
