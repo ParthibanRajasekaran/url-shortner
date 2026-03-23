@@ -1,0 +1,111 @@
+name: SwiftLink CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    # Runs on the 1st and 21st of every month at midnight UTC (~every 20 days).
+    # Standard cron does not support true rolling 20-day intervals;
+    # this is the closest fixed-date approximation.
+    - cron: '0 0 1,21 * *'
+
+jobs:
+  # ── Job 1: Fast compile gate ─────────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle (with cache)
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          # Only write the cache on main; PR/schedule builds read it.
+          cache-read-only: ${{ github.ref != 'refs/heads/main' }}
+
+      - name: Compile
+        run: ./gradlew compileJava --no-daemon
+
+  # ── Job 2: Unit tests (no Docker needed) ─────────────────────────────────────
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle (with cache)
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: true
+
+      - name: Run unit tests
+        run: |
+          ./gradlew test \
+            --tests "org.example.util.*" \
+            --tests "org.example.service.*" \
+            --tests "org.example.controller.*" \
+            --no-daemon
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-reports
+          path: build/reports/tests/
+          retention-days: 7
+
+  # ── Job 3: Integration tests (Testcontainers manages PostgreSQL + Redis) ──────
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Setup Gradle (with cache)
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          cache-read-only: true
+
+      - name: Run integration tests
+        # Testcontainers spins up its own PostgreSQL + Redis containers via
+        # Docker (available on ubuntu-latest runners). No service containers needed.
+        run: |
+          ./gradlew test \
+            --tests "org.example.integration.*" \
+            --no-daemon
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: integration-test-reports
+          path: build/reports/tests/
+          retention-days: 7
