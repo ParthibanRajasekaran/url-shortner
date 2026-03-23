@@ -27,6 +27,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -151,5 +152,24 @@ class UrlServiceTest {
 
         verify(repository, never()).findByShortCode(anyString());
         verify(redissonClient, never()).getBucket(anyString());
+    }
+
+    @Test
+    void testShortenUrl_redisWriteFailure_stillReturnsResponse() {
+        when(snowflakeIdGenerator.nextId()).thenReturn(123456789012345L);
+        RBucket rBucket = mock(RBucket.class);
+        doReturn(rBucket).when(redissonClient).getBucket(anyString());
+        doThrow(new RuntimeException("Redis unavailable")).when(rBucket).set(any(), anyLong(), any());
+
+        UrlMapping saved = UrlMapping.builder()
+                .id(123456789012345L).shortCode("abcdefg")
+                .longUrl("https://example.com").createdAt(Instant.now()).build();
+        when(repository.save(any())).thenReturn(saved);
+
+        // Redis failure during write-through must not propagate - service returns normally
+        ShortenResponse response = urlService.shortenUrl(new ShortenRequest("https://example.com"));
+
+        assertThat(response).isNotNull();
+        assertThat(response.longUrl()).isEqualTo("https://example.com");
     }
 }

@@ -103,7 +103,7 @@ class UrlShortenerIntegrationTest {
                 .build();
         repository.save(existing);
 
-        // Try to save another record with a different id but same shortCode — triggers UNIQUE constraint
+        // Try to save another record with a different id but same shortCode - triggers UNIQUE constraint
         UrlMapping duplicate = UrlMapping.builder()
                 .id(9998L)
                 .shortCode("collis1")

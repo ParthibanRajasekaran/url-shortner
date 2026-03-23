@@ -2,7 +2,7 @@
 
 # ⚡ SwiftLink
 
-### A production-grade URL shortener engineered for scale — not a tutorial project.
+### A production-grade URL shortener engineered for scale - not a tutorial project.
 
 [![CI](https://github.com/ParthibanRajasekaran/url-shortner/actions/workflows/ci.yml/badge.svg)](https://github.com/ParthibanRajasekaran/url-shortner/actions/workflows/ci.yml)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
@@ -17,7 +17,7 @@
 
 ---
 
-Most URL shorteners are demo projects with a database and a random string. SwiftLink is built the way production systems actually need to work: distributed ID generation that survives multi-instance deployments, multi-layer caching that degrades gracefully when Redis goes down, rate limiting at both the gateway and application layers, and schema migrations you can roll back. Every design decision in this codebase has a reason — and that reason is documented here.
+Most URL shorteners are demo projects with a database and a random string. SwiftLink is built the way production systems actually need to work: distributed ID generation that survives multi-instance deployments, multi-layer caching that degrades gracefully when Redis goes down, rate limiting at both the gateway and application layers, and schema migrations you can roll back. Every design decision in this codebase has a reason - and that reason is documented here.
 
 ---
 
@@ -96,7 +96,7 @@ SwiftLink uses a **Twitter Snowflake-style distributed ID**: 64 bits, time-order
 
 Base64 produces `+` and `/` characters, which are reserved in URLs. You'd need percent-encoding, which turns a short URL into a long one.
 
-Base62 uses only `[a-zA-Z0-9]` — 62 characters that are universally URL-safe. A 7-character Base62 string covers **3.5 trillion unique codes** (62⁷ = 3,521,614,606,208). At 1,000 URLs/second continuously, that's 111 years of capacity.
+Base62 uses only `[a-zA-Z0-9]` - 62 characters that are universally URL-safe. A 7-character Base62 string covers **3.5 trillion unique codes** (62⁷ = 3,521,614,606,208). At 1,000 URLs/second continuously, that's 111 years of capacity.
 
 ```java
 byte[] bytes = ByteBuffer.allocate(8).putLong(snowflakeId).array();
@@ -109,7 +109,7 @@ String shortCode = new String(Base62.createInstance().encode(bytes)).substring(0
 
 ### 3. 301 Permanent, not 302 Temporary
 
-A 301 response tells browsers and CDNs to cache the redirect. After the first visit, a returning user is redirected entirely at the edge — the request never reaches your servers. For high-traffic links, this is the difference between your infrastructure scaling linearly with clicks vs. serving mostly cache hits.
+A 301 response tells browsers and CDNs to cache the redirect. After the first visit, a returning user is redirected entirely at the edge - the request never reaches your servers. For high-traffic links, this is the difference between your infrastructure scaling linearly with clicks vs. serving mostly cache hits.
 
 A 302 would force every click through your stack, turning every viral link into a load event.
 
@@ -133,7 +133,7 @@ Request for /abc1234
 [DB miss → write negative cache → 404]
 ```
 
-The negative cache (key: `404:{shortCode}`, TTL: 5 minutes) prevents **cache penetration attacks** — a pattern where an adversary floods requests for random non-existent codes, bypassing cache and hammering the database on every request.
+The negative cache (key: `404:{shortCode}`, TTL: 5 minutes) prevents **cache penetration attacks** - a pattern where an adversary floods requests for random non-existent codes, bypassing cache and hammering the database on every request.
 
 > **Otherwise:** Without negative caching, a script sending 10,000 requests/second for random codes (none of which exist in Redis) creates 10,000 DB queries/second. This is a common DDoS vector against caching architectures.
 
@@ -162,7 +162,7 @@ The service degrades gracefully to database-only mode when Redis is unavailable.
 
 ### 6. Liquibase owns the schema, Hibernate validates it
 
-`ddl-auto: validate` means Hibernate will refuse to start if the schema doesn't match the entity definitions — but it will never silently alter your database. Liquibase migrations are versioned, reversible, and auditable.
+`ddl-auto: validate` means Hibernate will refuse to start if the schema doesn't match the entity definitions - but it will never silently alter your database. Liquibase migrations are versioned, reversible, and auditable.
 
 ```sql
 --liquibase formatted sql
@@ -192,7 +192,7 @@ Two independent rate limiting layers with different scopes:
 | Gateway | NGINX `limit_req_zone` | 10 req/min per IP, burst 5 | Cluster-wide |
 | Application | Bucket4j `ConcurrentHashMap<IP, Bucket>` | 5 req/min per IP | Per-instance |
 
-NGINX uses `$binary_remote_addr` (4 bytes) instead of `$remote_addr` (up to 15 bytes) for the rate limit zone key — a 60%+ memory reduction in the shared zone under high cardinality IP traffic.
+NGINX uses `$binary_remote_addr` (4 bytes) instead of `$remote_addr` (up to 15 bytes) for the rate limit zone key - a 60%+ memory reduction in the shared zone under high cardinality IP traffic.
 
 > **Otherwise:** A single rate limit layer can be circumvented by routing requests to different upstream nodes. Defense-in-depth ensures both the cluster boundary and the application boundary enforce limits independently.
 
@@ -206,7 +206,7 @@ NGINX uses `$binary_remote_addr` (4 bytes) instead of `$remote_addr` (up to 15 b
 | Framework | Spring Boot | 3.3.4 | Auto-configuration, production-ready defaults |
 | Database | PostgreSQL | 16 | ACID guarantees, B-tree indexes, TEXT type |
 | Cache | Redis (Redisson) | 7 / 3.36.0 | Redisson chosen over Spring Data Redis for richer failover handling |
-| ID Generation | Snowflake (custom) | — | Time-ordered, distributed, no coordination needed |
+| ID Generation | Snowflake (custom) | - | Time-ordered, distributed, no coordination needed |
 | Encoding | io.seruco:base62 | 0.1.3 | Lightweight, URL-safe, no `+/=` characters |
 | Rate Limiting | Bucket4j | 8.10.1 | Token bucket algorithm, zero-dependency |
 | Schema Mgmt | Liquibase | (managed) | Versioned, reversible DDL migrations |
@@ -239,7 +239,7 @@ curl -Lv http://localhost/{shortCode}
 
 **Run unit tests locally** (no Docker required):
 ```bash
-# macOS/Linux — requires JDK 21+
+# macOS/Linux - requires JDK 21+
 export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 
 ./gradlew test \
@@ -257,7 +257,7 @@ export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 
 ## API Reference
 
-### `POST /api/v1/urls` — Shorten a URL
+### `POST /api/v1/urls` - Shorten a URL
 
 **Rate limited:** 5 requests/minute per IP (Bucket4j) + 10/minute at NGINX gateway
 
@@ -287,7 +287,7 @@ curl -X POST http://localhost/api/v1/urls \
 
 ---
 
-### `GET /{shortCode}` — Redirect
+### `GET /{shortCode}` - Redirect
 
 Short codes are `[a-zA-Z0-9]{1,7}`. Anything else returns 404 immediately without a cache or DB lookup.
 
@@ -316,10 +316,10 @@ All settings have local defaults that work without Docker. Docker Compose overri
 | `app.base-url` | `http://localhost:8080` | `http://localhost` |
 | `app.own-host` | `localhost` | `localhost` |
 | `app.snowflake.worker-id` | `0` | Set by `docker-entrypoint.sh` from hostname |
-| `app.redis.url-ttl-seconds` | `86400` (24h) | — |
-| `app.redis.not-found-ttl-seconds` | `300` (5min) | — |
+| `app.redis.url-ttl-seconds` | `86400` (24h) | - |
+| `app.redis.not-found-ttl-seconds` | `300` (5min) | - |
 
-**Snowflake worker ID per replica**: The entrypoint script extracts a number from the container hostname and applies `% 1024` to guarantee it stays in the valid range — no manual configuration needed per replica.
+**Snowflake worker ID per replica**: The entrypoint script extracts a number from the container hostname and applies `% 1024` to guarantee it stays in the valid range - no manual configuration needed per replica.
 
 ---
 
@@ -327,13 +327,13 @@ All settings have local defaults that work without Docker. Docker Compose overri
 
 ```
 ├── unit/
-│   ├── SnowflakeIdGeneratorTest   — 10,000 sequential IDs, 10k concurrent (10 threads × 1k), monotonicity
-│   ├── UrlServiceTest             — cache hit/miss, DB fallback, collision handling, redirect loop detection
-│   ├── CachePenetrationTest       — DB hit once on repeated 404s, Redis-down graceful fallback
-│   └── UrlControllerTest          — @WebMvcTest: request validation, 301 Location header, rate limit 429
+│   ├── SnowflakeIdGeneratorTest   - 10,000 sequential IDs, 10k concurrent (10 threads × 1k), monotonicity
+│   ├── UrlServiceTest             - cache hit/miss, DB fallback, collision handling, redirect loop detection
+│   ├── CachePenetrationTest       - DB hit once on repeated 404s, Redis-down graceful fallback
+│   └── UrlControllerTest          - @WebMvcTest: request validation, 301 Location header, rate limit 429
 │
 └── integration/
-    └── UrlShortenerIntegrationTest — Testcontainers (real PostgreSQL 16 + Redis 7)
+    └── UrlShortenerIntegrationTest - Testcontainers (real PostgreSQL 16 + Redis 7)
         ├── Full shorten → redirect round-trip
         ├── Redirect loop → 400
         ├── Collision handling → 409
@@ -354,14 +354,14 @@ push / PR / schedule
         │
         ▼
     ┌───────┐
-    │ Build │  — ./gradlew compileJava (fast gate, blocks test jobs on failure)
+    │ Build │  - ./gradlew compileJava (fast gate, blocks test jobs on failure)
     └───┬───┘
         │
    ┌────┴────┐
    │         │
    ▼         ▼
 ┌──────┐  ┌───────────┐
-│ Unit │  │Integration│  — Run in parallel
+│ Unit │  │Integration│  - Run in parallel
 │Tests │  │  Tests    │
 └──────┘  └───────────┘
 ```
@@ -374,7 +374,7 @@ Test reports are uploaded as artifacts on failure for immediate diagnosis.
 
 This repo is a learning and reference implementation. Before taking it to production:
 
-- **Worker ID assignment**: `docker-entrypoint.sh` derives the worker ID from container hostname. In Kubernetes, use a StatefulSet — the pod ordinal becomes the worker ID directly, eliminating any hostname parsing.
+- **Worker ID assignment**: `docker-entrypoint.sh` derives the worker ID from container hostname. In Kubernetes, use a StatefulSet - the pod ordinal becomes the worker ID directly, eliminating any hostname parsing.
 - **Rate limit state**: The Bucket4j `ConcurrentHashMap` is in-process and doesn't survive pod restarts. For persistent per-IP rate limiting across restarts, replace with a Redis-backed `ProxyManager` (the `bucket4j-redis` module). NGINX provides the true cluster-wide gate in the meantime.
 - **TLS**: NGINX is configured for HTTP/80. Add a `ssl_certificate` block and redirect all HTTP to HTTPS.
 - **Secret management**: Credentials are environment variables in Compose. In production, use Kubernetes Secrets, HashiCorp Vault, or AWS Secrets Manager.
@@ -387,30 +387,30 @@ This repo is a learning and reference implementation. Before taking it to produc
 ```
 .
 ├── src/main/java/org/example/
-│   ├── SwiftLinkApplication.java       — Entry point
+│   ├── SwiftLinkApplication.java       - Entry point
 │   ├── config/
-│   │   ├── AppProperties.java          — @ConfigurationProperties (base URL, TTLs, worker ID)
-│   │   └── RateLimitConfig.java        — Bucket4j token bucket factory
-│   ├── controller/UrlController.java   — POST /api/v1/urls, GET /{shortCode}
-│   ├── service/UrlService.java         — Core logic: shorten, resolve, cache, fallback
-│   ├── util/SnowflakeIdGenerator.java  — Thread-safe 64-bit distributed ID generator
-│   ├── entity/UrlMapping.java          — JPA entity (Snowflake PK, no @GeneratedValue)
-│   ├── repository/                     — Spring Data JPA (findByShortCode)
-│   ├── dto/                            — ShortenRequest (validated), ShortenResponse
-│   └── exception/                      — GlobalExceptionHandler, RedirectLoopException
+│   │   ├── AppProperties.java          - @ConfigurationProperties (base URL, TTLs, worker ID)
+│   │   └── RateLimitConfig.java        - Bucket4j token bucket factory
+│   ├── controller/UrlController.java   - POST /api/v1/urls, GET /{shortCode}
+│   ├── service/UrlService.java         - Core logic: shorten, resolve, cache, fallback
+│   ├── util/SnowflakeIdGenerator.java  - Thread-safe 64-bit distributed ID generator
+│   ├── entity/UrlMapping.java          - JPA entity (Snowflake PK, no @GeneratedValue)
+│   ├── repository/                     - Spring Data JPA (findByShortCode)
+│   ├── dto/                            - ShortenRequest (validated), ShortenResponse
+│   └── exception/                      - GlobalExceptionHandler, RedirectLoopException
 ├── src/main/resources/
 │   ├── application.yml
-│   └── db/changelog/                   — Liquibase master + 001-create-url-mapping.sql
-├── src/test/                           — Unit + Integration test suites
-├── Dockerfile                          — Multi-stage: JDK 21 builder → JRE 21 runtime
-├── docker-entrypoint.sh                — Derives Snowflake worker ID from container hostname
-├── docker-compose.yml                  — Full stack: NGINX + 3 API pods + PostgreSQL + Redis
-├── nginx.conf                          — Rate limiting, load balancing, proxy_redirect off
-└── .github/workflows/ci.yml           — Build gate + unit tests + integration tests
+│   └── db/changelog/                   - Liquibase master + 001-create-url-mapping.sql
+├── src/test/                           - Unit + Integration test suites
+├── Dockerfile                          - Multi-stage: JDK 21 builder → JRE 21 runtime
+├── docker-entrypoint.sh                - Derives Snowflake worker ID from container hostname
+├── docker-compose.yml                  - Full stack: NGINX + 3 API pods + PostgreSQL + Redis
+├── nginx.conf                          - Rate limiting, load balancing, proxy_redirect off
+└── .github/workflows/ci.yml           - Build gate + unit tests + integration tests
 ```
 
 ---
 
 ## License
 
-MIT — use it, learn from it, build on it.
+MIT - use it, learn from it, build on it.

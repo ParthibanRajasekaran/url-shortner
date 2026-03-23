@@ -1,4 +1,4 @@
-# Stage 1 — Build
+# Stage 1 - Build
 FROM eclipse-temurin:21-jdk-alpine AS builder
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN ./gradlew dependencies --no-daemon --quiet
 COPY src ./src
 RUN ./gradlew bootJar -x test --no-daemon --quiet
 
-# Stage 2 — Runtime
+# Stage 2 - Runtime
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 

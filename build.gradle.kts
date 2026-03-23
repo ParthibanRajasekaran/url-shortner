@@ -3,7 +3,7 @@ plugins {
     id("io.spring.dependency-management") version "1.1.6"
     id("java")
     id("jacoco")
-    id("org.sonarqube") version "5.1.0.4882"
+    id("org.sonarqube") version "6.0.0.5145"
 }
 
 group = "org.example"
@@ -34,7 +34,7 @@ dependencies {
     // Liquibase for schema migrations
     implementation("org.liquibase:liquibase-core")
 
-    // Redisson (Redis client) — replaces spring-data-redis
+    // Redisson (Redis client) - replaces spring-data-redis
     implementation("org.redisson:redisson-spring-boot-starter:3.36.0")
 
     // Base62 encoding

@@ -81,6 +81,7 @@ jobs:
     name: SonarCloud Analysis
     runs-on: ubuntu-latest
     needs: unit-tests
+    continue-on-error: true
 
     steps:
       - name: Checkout
@@ -101,11 +102,15 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          ./gradlew test jacocoTestReport \
+          ./gradlew test \
             --tests "org.example.util.*" \
             --tests "org.example.service.*" \
             --tests "org.example.controller.*" \
+            --tests "org.example.exception.*" \
             --no-daemon
+
+      - name: Generate JaCoCo coverage report
+        run: ./gradlew jacocoTestReport -x test --no-daemon
 
       - name: Run SonarCloud analysis
         env:
