@@ -75,9 +75,9 @@ class UrlServiceTest {
 
     @Test
     void testShortenUrl_redirectLoop_throwsException() {
-        assertThatThrownBy(() ->
-                urlService.shortenUrl(new ShortenRequest("https://swiftlink.io/abc123"))
-        ).isInstanceOf(RedirectLoopException.class);
+        ShortenRequest request = new ShortenRequest("https://swiftlink.io/abc123");
+        assertThatThrownBy(() -> urlService.shortenUrl(request))
+                .isInstanceOf(RedirectLoopException.class);
 
         verify(repository, never()).save(any());
     }
@@ -87,9 +87,9 @@ class UrlServiceTest {
         when(snowflakeIdGenerator.nextId()).thenReturn(999L);
         when(repository.save(any())).thenThrow(new DataIntegrityViolationException("duplicate key"));
 
-        assertThatThrownBy(() ->
-                urlService.shortenUrl(new ShortenRequest("https://example.com"))
-        ).isInstanceOf(DataIntegrityViolationException.class);
+        ShortenRequest request = new ShortenRequest("https://example.com");
+        assertThatThrownBy(() -> urlService.shortenUrl(request))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

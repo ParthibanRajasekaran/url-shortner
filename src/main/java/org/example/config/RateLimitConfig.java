@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * In-process rate limiting using Bucket4j's local Bucket API.
@@ -31,7 +32,7 @@ public class RateLimitConfig {
                 .build();
     }
 
-    public ConcurrentHashMap<String, Bucket> ipRateBuckets() {
+    public ConcurrentMap<String, Bucket> ipRateBuckets() {
         return new ConcurrentHashMap<>();
     }
 }

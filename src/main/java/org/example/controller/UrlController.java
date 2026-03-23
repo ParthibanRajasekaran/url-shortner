@@ -3,7 +3,6 @@ package org.example.controller;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.example.config.RateLimitConfig;
 import org.example.dto.ShortenRequest;
