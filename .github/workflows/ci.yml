@@ -101,11 +101,15 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          ./gradlew test jacocoTestReport \
+          ./gradlew test \
             --tests "org.example.util.*" \
             --tests "org.example.service.*" \
             --tests "org.example.controller.*" \
+            --tests "org.example.exception.*" \
             --no-daemon
+
+      - name: Generate JaCoCo coverage report
+        run: ./gradlew jacocoTestReport --no-daemon
 
       - name: Run SonarCloud analysis
         env:
