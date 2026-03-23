@@ -54,7 +54,7 @@ public class SnowflakeIdGenerator {
         if (now == lastTimestamp) {
             sequence = (sequence + 1) & MAX_SEQUENCE;
             if (sequence == 0) {
-                // Sequence overflow — busy-wait until next millisecond
+                // Sequence overflow - busy-wait until next millisecond
                 now = waitUntilNextMillis(lastTimestamp);
             }
         } else {

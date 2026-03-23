@@ -64,7 +64,7 @@ class CachePenetrationTest {
         // Simulate negative cache now populated (as written by the first call)
         when(negBucket.isExists()).thenReturn(true);
 
-        // Second call — negative cache hit, DB must NOT be called again
+        // Second call - negative cache hit, DB must NOT be called again
         assertThatThrownBy(() -> urlService.resolveUrl("missing"))
                 .isInstanceOf(ResponseStatusException.class);
 

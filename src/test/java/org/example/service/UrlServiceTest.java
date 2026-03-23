@@ -166,7 +166,7 @@ class UrlServiceTest {
                 .longUrl("https://example.com").createdAt(Instant.now()).build();
         when(repository.save(any())).thenReturn(saved);
 
-        // Redis failure during write-through must not propagate — service returns normally
+        // Redis failure during write-through must not propagate - service returns normally
         ShortenResponse response = urlService.shortenUrl(new ShortenRequest("https://example.com"));
 
         assertThat(response).isNotNull();
