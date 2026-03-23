@@ -5,8 +5,6 @@ import io.github.bucket4j.Bucket;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * In-process rate limiting using Bucket4j's local Bucket API.
@@ -18,11 +16,6 @@ import java.util.concurrent.ConcurrentMap;
 @Configuration
 public class RateLimitConfig {
 
-    /**
-     * Per-IP bucket registry. Buckets are created lazily on first request from an IP.
-     * Old entries are never explicitly evicted here; for production, swap with a
-     * Caffeine-backed expiring map to avoid unbounded growth.
-     */
     public static Bucket createBucket() {
         return Bucket.builder()
                 .addLimit(Bandwidth.builder()
@@ -30,9 +23,5 @@ public class RateLimitConfig {
                         .refillIntervally(5, Duration.ofMinutes(1))
                         .build())
                 .build();
-    }
-
-    public ConcurrentMap<String, Bucket> ipRateBuckets() {
-        return new ConcurrentHashMap<>();
     }
 }
